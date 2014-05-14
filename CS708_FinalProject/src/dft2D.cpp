@@ -119,7 +119,7 @@ void filterCoeffGen(bool isLowpass, float wc, float *pCoeffs)
 		for ( int i = 0; i < N; ++i )
 			for (int j = 0; j < N; ++j, ++m_pCoeffs )
 			{
-				if ( i < fPassband && j < fPassband)
+				if ( ( i < fPassband / 4 || i > fPassband * 3 / 4 ) && ( j < fPassband / 4 || j > fPassband * 3 / 4 ) )
 					*m_pCoeffs = 1;
 				else
 					*m_pCoeffs = 0;
@@ -130,10 +130,10 @@ void filterCoeffGen(bool isLowpass, float wc, float *pCoeffs)
 		for ( int i = 0; i < N; ++i )
 			for (int j = 0; j < N; ++j, ++m_pCoeffs )
 			{
-				if ( i > fPassband && j > fPassband )
-					*m_pCoeffs = 1;
-				else
+				if ( ( i < fPassband / 4 || i > fPassband * 3 / 4 ) && ( j < fPassband / 4 || j > fPassband * 3 / 4 ) )
 					*m_pCoeffs = 0;
+				else
+					*m_pCoeffs = 1;
 			}
 	}
 }
@@ -147,7 +147,7 @@ void calcGoldRef( unsigned char *pIn, double complex *pTwiddleDFT, double comple
 				  float *pFilterCoeffs )
 {
 	// Output image
-	char *fnameOut = "data/lena_filtered_cpu.pgm";
+	char *fnameOut = "data/lena_filtered_cpu_lp.pgm";
 
 	// Benchmark time stamps
 	clock_t timer;
@@ -289,7 +289,7 @@ void calcGoldRef( unsigned char *pIn, double complex *pTwiddleDFT, double comple
 
 int main(int argc, char *argv[])
 {
-	char *fnameOut = "data/lena_filtered_gpu.pgm";	// Output image
+	char *fnameOut = "data/lena_filtered_gpu_lp.pgm";	// Output image
 	unsigned char *h_pImgResult = NULL;				// Output handle
 	Complex *h_pTwiddleDFT = NULL;					// Host DFT Twiddle Matrix
 	Complex *h_pTwiddleIDFT = NULL;					// Host IDFT Twiddle Matrix
@@ -299,7 +299,7 @@ int main(int argc, char *argv[])
 	static const int dev = 0;						// Hard code to use device 0
 	cudaEvent_t start, stop;						// Cuda events for benchmarking
 	float time;										// Performance timer for benchmarking
-	std::string filterOption ("highpass");			// Cmd line filter option
+	std::string filterOption ("lowpass");			// Cmd line filter option
 
 
 	// Load the image
